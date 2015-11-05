@@ -40,6 +40,7 @@ struct Tag {
  */
 struct RGBImage {
     std::string ImageURL;
+    std::string ImageStream;
 };
 
 /**

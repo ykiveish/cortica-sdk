@@ -38,7 +38,7 @@ CorticaProviderCloud::Initialize () {
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	m_HTTPRequest = curl_easy_init();
-	m_POSTData = (char *)malloc(MAX_SIZE_DATA_PACKAGE);
+	m_Tools = new Utilities ();
 }
 
 std::string
@@ -72,8 +72,43 @@ CorticaProviderCloud::SendImage (std::string url) {
 }
 
 std::string
-CorticaProviderCloud::SendEmbeddedImage (const char* image64base) {
-	return NULL;
+CorticaProviderCloud::SendEmbeddedImage (std::string& image64base) {
+	CURLcode 			response;
+	std::stringstream 	postData;
+	std::string 		resData;
+	std::string 		reqData;
+	std::string 		encoded;
+	char *				output;
+
+	int count = 0;
+	encoded = m_Tools->EncodeBase64(reinterpret_cast<const unsigned char*>(image64base.c_str()), image64base.length());
+	postData << "data={" << 
+				"'tid':'1'," <<
+				"'user_id':'yevgeniy'," <<
+				"'image':'" << encoded << "'}";
+	reqData = postData.str();
+	count = m_Tools->Escaping ((char *)reqData.c_str(), m_data);
+    
+	if (m_HTTPRequest) {
+		curl_easy_setopt (m_HTTPRequest, CURLOPT_URL, getenv("CORTICA_PATH"));
+		curl_easy_setopt (m_HTTPRequest, CURLOPT_POST, 1);
+		curl_easy_setopt (m_HTTPRequest, CURLOPT_POSTFIELDS, m_data);
+		curl_easy_setopt (m_HTTPRequest, CURLOPT_POSTFIELDSIZE, count);
+
+		curl_easy_setopt (m_HTTPRequest, CURLOPT_WRITEFUNCTION, CurlDataArrivedCB);
+		curl_easy_setopt (m_HTTPRequest, CURLOPT_WRITEDATA, &resData);
+
+		response = curl_easy_perform (m_HTTPRequest);
+        // std::cout << "RESPONSE = " << resData << std::endl;
+
+		if(response != CURLE_OK) {
+			std::cout << "CURL ERROR :: " << 
+			curl_easy_strerror(response) << std::endl;
+			return NULL;
+		}
+	}
+
+	return resData;
 }
 
 void
@@ -82,6 +117,6 @@ CorticaProviderCloud::Free () {
 
 	curl_easy_cleanup (m_HTTPRequest);
 	curl_global_cleanup ();
-	free (m_POSTData);
+	free (m_Tools);
 	delete this;
 }

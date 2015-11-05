@@ -22,14 +22,17 @@
 * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
 #include <string>
 
-class ICorticaProvider {
+class Utilities {
 public:
-	virtual void Initialize () = 0;
-	virtual std::string SendImage (std::string url) = 0;
-	virtual std::string SendEmbeddedImage (std::string& image64base) = 0;
-	virtual void Free () = 0;
+	char toHEX (char code);
+	long Escaping (char * src, char * dest);
+	std::string EncodeBase64 (unsigned char const* bytes_to_encode, unsigned int in_len);
+private:
+	char m_hex[16] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'}; // "0123456789ABCDEF";
+	const std::string m_base64_chars = 
+             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+             "abcdefghijklmnopqrstuvwxyz"
+             "0123456789+/";
 };

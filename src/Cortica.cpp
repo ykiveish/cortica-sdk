@@ -47,20 +47,29 @@ Cortica::matchingSync (RGBImage * data) {
 	Json::Value root;
 	Json::Reader reader;
 
-	std::string rawData = m_provider->SendImage (data->ImageURL);
+    std::string rawData;
+    if (data->ImageURL != "") {
+        rawData = m_provider->SendImage (data->ImageURL);
+    } else if (data->ImageStream != "") {
+        rawData = m_provider->SendEmbeddedImage (data->ImageStream);
+    } else {
+        return tags;
+    }
 
-	if (!reader.parse(rawData, root)) {
-		std::cout  	<< "Failed to parse configuration\n"
-					<< reader.getFormattedErrorMessages();
-	} else {
-		const Json::Value jsonTags = root["matches"];
-		for ( int index = 0; index < jsonTags.size(); ++index ) {
-			Tag tag;
-			tag.Name = jsonTags[index].get("tag", 0).asString();
-			tags.push_back (tag);
+    if (rawData != "") {
+    	if (!reader.parse(rawData, root)) {
+			std::cout  	<< "Failed to parse configuration\n"
+						<< reader.getFormattedErrorMessages();
+		} else {
+			const Json::Value jsonTags = root["matches"];
+			for ( int index = 0; index < jsonTags.size(); ++index ) {
+				Tag tag;
+				tag.Name = jsonTags[index].get("tag", 0).asString();
+				tags.push_back (tag);
+			}
 		}
-	}
-
+    }
+	
 	return tags;
 }
 
