@@ -6,6 +6,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 find_package( OpenCV REQUIRED )
 message (INFO "Cortica configuration.")
 
+FIND_PACKAGE (Threads)
+
 include_directories (
 	${PROJECT_SOURCE_DIR}/include
 )
@@ -17,9 +19,4 @@ link_directories (
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 add_subdirectory (src)
-
-add_executable (cortica-test cortica-test.cpp)
-target_link_libraries (cortica-test cortica)
-
-add_executable (cortica-opencv-test cortica-opencv-test.cpp)
-target_link_libraries (cortica-opencv-test ${OpenCV_LIBS} cortica)
+add_subdirectory (examples)

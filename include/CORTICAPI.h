@@ -26,7 +26,6 @@
 
 #include <CORTICAPITypes.h>
 #include <vector>
-#pragma once
 
 #include <stdint.h>
 #include <cstddef>
@@ -74,6 +73,12 @@ class CORTICAPI {
          * @return Result of operation
          */
         virtual CORTICAPI_RESULT setMatchingCallback (onMatchingCallback) = 0;
+        
+        virtual CORTICAPI_RESULT initCalssificationCamera (std::string device) = 0;
+        
+        virtual std::vector<Tag> getClassificationTag () = 0;
+        
+        virtual CORTICAPI_RESULT closeClassificationCamera () = 0;
         
     private:
         CorticaDB database; /**< Local TAGs database. */

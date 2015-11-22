@@ -24,54 +24,23 @@
 
 #pragma once
 
-#include "CORTICAPI.h"
-#include "ICorticaProvider.h"
-#include "CorticaProviderFactory.h"
-#include "json/json.h"
-
 #include <iostream>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sstream>
-#include <fstream>
 #include <pthread.h>
-#include <linux/videodev.h>
-#include "v4l2uvc.h"
-
-#define TMP_PATH          "/tmp/cortica"
-#define PROCESSING_PATH   "/tmp/cortica/processing"
-#define OUTPUT_PATH       "/tmp/cortica/output"
+#include "mjpg_streamer.h"
 
 using namespace std;
 
-class CORTICAPI_EXPORT Cortica : public CORTICAPI {
+class Streamer {
 public:
-	Cortica ();
-	~Cortica ();
-	CORTICAPI_RESULT initializeDB ();
-	vector<Tag> matchingSync (RGBImage * data);
-	CORTICAPI_RESULT matchingAsync (RGBImage * data);
-	CORTICAPI_RESULT setMatchingCallback (onMatchingCallback);
+    Streamer ();
+    void start ();
+    void end ();
     
-    CORTICAPI_RESULT initCalssificationCamera (string device);
-    vector<Tag> getClassificationTag ();
-    CORTICAPI_RESULT closeClassificationCamera ();
-
-	CORTICAPI_RESULT SetProvider (CORTICAPI_PROVIDER provider);
-
-	static Cortica* GetApi (CORTICAPI_PROVIDER provider) {
-		static Cortica instance;
-		instance.SetProvider (provider);
-		return &instance;
-	}
-
-    pthread_mutex_t v4l2uvcMutex;
-    bool            v4l2uvcWorking;
-    string          v4l2uvcVideoDevice;
+    sync_t  mjpegSync;
     
 private:
-	ICorticaProvider* m_provider;
-    
-    pthread_t m_v4l2uvcThread;
+    pthread_t   m_mjpegThread;
+    bool        m_streamerActive;
 };
+    

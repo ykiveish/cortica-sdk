@@ -22,56 +22,52 @@
 * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
-#include "CORTICAPI.h"
-#include "ICorticaProvider.h"
-#include "CorticaProviderFactory.h"
-#include "json/json.h"
-
-#include <iostream>
-#include <unistd.h>
+#include "Cortica.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <unistd.h>
 #include <sstream>
 #include <fstream>
-#include <pthread.h>
+
 #include <linux/videodev.h>
 #include "v4l2uvc.h"
-
-#define TMP_PATH          "/tmp/cortica"
-#define PROCESSING_PATH   "/tmp/cortica/processing"
-#define OUTPUT_PATH       "/tmp/cortica/output"
+#include "Streamer.h"
 
 using namespace std;
 
-class CORTICAPI_EXPORT Cortica : public CORTICAPI {
-public:
-	Cortica ();
-	~Cortica ();
-	CORTICAPI_RESULT initializeDB ();
-	vector<Tag> matchingSync (RGBImage * data);
-	CORTICAPI_RESULT matchingAsync (RGBImage * data);
-	CORTICAPI_RESULT setMatchingCallback (onMatchingCallback);
+void sig_handler (int signo);
+bool amWorking = true;
+
+int
+main (int argc, char ** argv) {    
+    pthread_t thread;
+
+    Cortica* api = Cortica::GetApi (CORTICAPI_PROVIDER_CLOUD);
+    api->initializeDB ();
+    api->initCalssificationCamera ("/dev/video0");
     
-    CORTICAPI_RESULT initCalssificationCamera (string device);
-    vector<Tag> getClassificationTag ();
-    CORTICAPI_RESULT closeClassificationCamera ();
+    Streamer* stream = new Streamer ();
+    stream->start ();
 
-	CORTICAPI_RESULT SetProvider (CORTICAPI_PROVIDER provider);
+    signal (SIGINT, sig_handler);
+    while (amWorking) {
+        vector<Tag> tags = api->getClassificationTag ();
+        for (vector<Tag>::iterator item = tags.begin(); item != tags.end(); ++item) {
+            std::cout << (*item).Name << std::endl << std::endl;
+        }
+    }
+    
+    stream->end ();
+    api->closeClassificationCamera ();
+	std::cout << "Exit 'cortica-test'" << std::endl;
+	return 0;
+}
 
-	static Cortica* GetApi (CORTICAPI_PROVIDER provider) {
-		static Cortica instance;
-		instance.SetProvider (provider);
-		return &instance;
+void
+sig_handler (int signo) {
+	if (signo == SIGINT) {
+		amWorking = false;
 	}
-
-    pthread_mutex_t v4l2uvcMutex;
-    bool            v4l2uvcWorking;
-    string          v4l2uvcVideoDevice;
-    
-private:
-	ICorticaProvider* m_provider;
-    
-    pthread_t m_v4l2uvcThread;
-};
+}
