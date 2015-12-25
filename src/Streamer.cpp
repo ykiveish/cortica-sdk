@@ -30,39 +30,46 @@ void *
 streamerThreadHandler (void * args) {
     Streamer * obj = (Streamer *) args;
     
-    streamer_start (&(obj->mjpegSync)); 
+    streamer_start (&(obj->mjpegCtx)); 
 
     cout << "Exit - streamerThreadHandler" << endl;
 }
 
-Streamer::Streamer () {
+Streamer::Streamer (string imagepath, string websitepath, int port) {
+    imagePath   = imagepath;
+    websitePath = websitepath;
+    
+    mjpegCtx.image_source   = (char *) imagePath.c_str();
+    mjpegCtx.website_path   = (char *) websitePath.c_str();
+    mjpegCtx.port           = port;
+    
     m_streamerActive = false;
 }
 
 void
-Streamer::start () {
-    pthread_cond_init  (&(mjpegSync.cond), NULL);
-    pthread_mutex_init (&(mjpegSync.mutex), NULL);
+Streamer::Start () {
+    pthread_cond_init  (&(mjpegCtx.sync.cond), NULL);
+    pthread_mutex_init (&(mjpegCtx.sync.mutex), NULL);
     
     int error = pthread_create(&m_mjpegThread, NULL, streamerThreadHandler, this);
     if (error) {
-        pthread_cond_destroy  (&(mjpegSync.cond));
-        pthread_mutex_destroy (&(mjpegSync.mutex));
+        pthread_cond_destroy  (&(mjpegCtx.sync.cond));
+        pthread_mutex_destroy (&(mjpegCtx.sync.mutex));
     }
     
     m_streamerActive = true;
 }
 
 void
-Streamer::end () {
+Streamer::End () {
     if (m_streamerActive == true) {
-        pthread_mutex_lock(&(mjpegSync.mutex));
-        pthread_cond_signal(&(mjpegSync.cond));
-        pthread_mutex_unlock(&(mjpegSync.mutex));
+        pthread_mutex_lock(&(mjpegCtx.sync.mutex));
+        pthread_cond_signal(&(mjpegCtx.sync.cond));
+        pthread_mutex_unlock(&(mjpegCtx.sync.mutex));
 
         usleep (2 * 1000 * 1000);
         
-        pthread_cond_destroy  (&(mjpegSync.cond));
-        pthread_mutex_destroy (&(mjpegSync.mutex));
+        pthread_cond_destroy  (&(mjpegCtx.sync.cond));
+        pthread_mutex_destroy (&(mjpegCtx.sync.mutex));
     }
 }

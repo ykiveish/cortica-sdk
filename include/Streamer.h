@@ -33,11 +33,13 @@ using namespace std;
 
 class Streamer {
 public:
-    Streamer ();
-    void start ();
-    void end ();
+    Streamer (string imagepath, string websitepath, int port);
+    void Start ();
+    void End ();
     
-    sync_t  mjpegSync;
+    mjpg_context_t mjpegCtx;
+    string imagePath;
+    string websitePath;
     
 private:
     pthread_t   m_mjpegThread;

@@ -102,9 +102,8 @@ CorticaProviderCloud::SendEmbeddedImage (std::string& image64base) {
         // std::cout << "RESPONSE = " << resData << std::endl;
 
 		if(response != CURLE_OK) {
-			std::cout << "CURL ERROR :: " << 
-			curl_easy_strerror(response) << std::endl;
-			return NULL;
+            std::cout << "CURL ERROR :: " << 
+                    curl_easy_strerror(response) << std::endl;
 		}
 	}
 

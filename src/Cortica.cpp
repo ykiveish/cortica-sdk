@@ -98,7 +98,7 @@ Cortica::matchingSync (RGBImage * data) {
     } else {
         return tags;
     }
-
+    
     if (rawData != "") {
     	if (!reader.parse(rawData, root)) {
 			std::cout  	<< "Failed to parse configuration\n"

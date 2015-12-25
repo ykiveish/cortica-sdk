@@ -41,15 +41,14 @@ void sig_handler (int signo);
 bool amWorking = true;
 
 int
-main (int argc, char ** argv) {    
-    pthread_t thread;
-
+main (int argc, char ** argv) {
     Cortica* api = Cortica::GetApi (CORTICAPI_PROVIDER_CLOUD);
     api->initializeDB ();
     api->initCalssificationCamera ("/dev/video0");
     
-    Streamer* stream = new Streamer ();
-    stream->start ();
+    // param 1 - path to the image, path to, param 2 - website path, param 3 - listening port
+    Streamer* stream = new Streamer ("/tmp/cortica/processing", "/home/workspace/cortica-sdk/examples/mjpg-streamer-www", 8080);
+    stream->Start ();
 
     signal (SIGINT, sig_handler);
     while (amWorking) {
@@ -59,8 +58,10 @@ main (int argc, char ** argv) {
         }
     }
     
-    stream->end ();
+    stream->End ();
     api->closeClassificationCamera ();
+    delete stream;
+    
 	std::cout << "Exit 'cortica-test'" << std::endl;
 	return 0;
 }

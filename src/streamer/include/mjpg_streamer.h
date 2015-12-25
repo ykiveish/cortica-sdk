@@ -47,6 +47,18 @@ extern "C" {
 #include "input.h"
 #include "output.h"
 
+typedef struct {
+    pthread_mutex_t mutex;
+    pthread_cond_t  cond;
+} sync_t;
+
+typedef struct {
+    sync_t sync;
+    int port;
+    char * image_source;
+    char * website_path;
+} mjpg_context_t;
+
 /* an enum to identify the commands destination*/
 typedef enum {
     Dest_Input = 0,
@@ -93,13 +105,8 @@ struct _globals {
 /* global variables that are accessed by all plugins */
 typedef struct _globals globals;
 
-typedef struct {
-    pthread_mutex_t mutex;
-    pthread_cond_t  cond;
-} sync_t;
-
 int split_parameters(char *parameter_string, int *argc, char **argv);
-int streamer_start (sync_t *sync);
+int streamer_start (mjpg_context_t *ctx);
 
 #endif
 

@@ -73,16 +73,29 @@ int split_parameters(char *parameter_string, int *argc, char **argv)
     return 1;
 }
 
-int streamer_start (sync_t *sync)
+int streamer_start (mjpg_context_t *ctx)
 {
-    char *input[1]  = { "./libinput_file.so -f /tmp/cortica/output -r" };
-    char *output[1] = { "./liboutput_http.so -w ./mjpg-streamer-www" };
+    // char *input[1]  = { "./libinput_file.so -f /tmp/cortica/output -r" };
+    // char *output[1] = { "./liboutput_http.so -w ./mjpg-streamer-www" };
+    
+    char input[1][128];
+    char output[1][128];
     
     int i;
     size_t tmp = 0;
     global.outcnt = 1;
     global.incnt  = 1;
-
+    
+    sprintf (input[0], "./libinput_file.so -f %s", ctx->image_source);
+    
+    if (strlen(ctx->website_path) == 0) {
+        sprintf (output[0], "./liboutput_http.so -p %d", ctx->port);
+    } else {
+        sprintf (output[0], "./liboutput_http.so -p %d -w %s", ctx->port, ctx->website_path);
+    }
+    
+    printf (" --------------------------------> %s\n", output);
+    
     openlog("MJPG-streamer ", LOG_PID | LOG_CONS, LOG_USER);
     syslog(LOG_INFO, "starting application");
 
@@ -220,9 +233,9 @@ int streamer_start (sync_t *sync)
     
     printf ("Waiting for closing ...\n");
     // Wait for signal.
-    pthread_mutex_lock(&(sync->mutex));
-    pthread_cond_wait(&(sync->cond), &(sync->mutex));
-    pthread_mutex_unlock(&(sync->mutex));
+    pthread_mutex_lock(&(ctx->sync.mutex));
+    pthread_cond_wait(&(ctx->sync.cond), &(ctx->sync.mutex));
+    pthread_mutex_unlock(&(ctx->sync.mutex));
     printf ("Shutting down streamer ...\n");
     
     /* signal "stop" to threads */

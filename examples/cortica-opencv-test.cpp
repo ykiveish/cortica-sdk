@@ -51,8 +51,8 @@ threadHandler (void * args) {
     if(!cap.isOpened())  // check if we succeeded
         amWorking = false;
     
-    Streamer* stream = new Streamer ();
-    stream->start ();
+    Streamer* stream = new Streamer ("", "", 8080);
+    stream->Start ();
     
     while (amWorking) {
         // 1. Capture frame.
@@ -70,7 +70,7 @@ threadHandler (void * args) {
         pthread_mutex_unlock (&gMutex);
     }
     
-    stream->end ();
+    stream->End ();
 }
 
 int
